@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Reference</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+        }
+        /* Basic styling for markdown content */
+        .markdown-body h1 {
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .markdown-body h2 {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        .markdown-body ul, ol {
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="markdown-container" class="markdown-body">
+        </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        fetch('./data-reference.md')
+            .then(response => response.text())
+            .then(markdown => {
+                document.getElementById('markdown-container').innerHTML = marked.parse(markdown);
+            });
+    </script>
+</body>
+</html>
