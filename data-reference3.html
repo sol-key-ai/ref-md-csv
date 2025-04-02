@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Reference</title>
+    <style>
+        /* Modern Minimalist Styling */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Clean, modern font */
+            margin: 20px;
+            line-height: 1.6;
+            color: #333; /* Dark gray for good readability */
+            background-color: #f8f8f8; /* Light gray background */
+        }
+
+        .container {
+            max-width: 960px; /* Limit page width for better readability */
+            margin: 0 auto;
+            padding: 30px;
+            background-color: #fff; /* White content area */
+            border-radius: 8px; /* Soft rounded corners */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        }
+
+        h1 {
+            color: #2c3e50; /* Dark blue-gray for headings */
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        h2 {
+            color: #34495e; /* Slightly lighter blue-gray */
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        .markdown-body {
+            margin-bottom: 30px;
+        }
+
+        .markdown-body h2 {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 8px;
+        }
+
+        .markdown-body ul, .markdown-body ol {
+            padding-left: 25px;
+        }
+
+        /* CSV Preview Section */
+        .csv-preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .download-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #5cb85c; /* Green download button */
+            color: white;
+            text-decoration: none;
+            border-radius: 25px; /* Pill shape */
+            border: none;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+
+        .download-button:hover {
+            background-color: #4cae4c;
+        }
+
+        #csv-preview-container {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        #csv-preview-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #csv-preview-table th, #csv-preview-table td {
+            border: 1px solid #eee;
+            padding: 10px;
+            text-align: left;
+            font-size: 0.85em;
+        }
+
+        #csv-preview-table th {
+            background-color: #f5f5f5;
+            color: #555;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #csv-preview-table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dashboard Data Reference</h1>
+
+        <div id="markdown-container" class="markdown-body">
+            </div>
+
+        <div id="csv-preview-container">
+            <div class="csv-preview-header">
+                <h2>Data File Preview</h2>
+                <a href="./data.csv" download="dashboard_data.csv" class="download-button">Download CSV</a>
+            </div>
+            <table id="csv-preview-table">
+                <thead>
+                    <tr></tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        // Fetch and display markdown
+        fetch('./data-reference.md')
+            .then(response => response.text())
+            .then(markdown => {
+                document.getElementById('markdown-container').innerHTML = marked.parse(markdown);
+            });
+
+        // Function to fetch and display CSV data
+        async function loadAndDisplayCsv() {
+            try {
+                const response = await fetch('./data.csv');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const csvText = await response.text();
+                const lines = csvText.trim().split('\n');
+                if (lines.length === 0) {
+                    document.getElementById('csv-preview-container').innerHTML = '<p>No data found in CSV file.</p>';
+                    return;
+                }
+
+                const headers = lines[0].split(',');
+                const dataRows = lines.slice(1, 6); // Get the first 5 data rows
+
+                const tableHead = document.querySelector('#csv-preview-table thead tr');
+                const tableBody = document.querySelector('#csv-preview-table tbody');
+
+                // Populate table headers
+                headers.forEach(header => {
+                    const th = document.createElement('th');
+                    th.textContent = header;
+                    tableHead.appendChild(th);
+                });
+
+                // Populate table body with data rows
+                dataRows.forEach(row => {
+                    const tr = document.createElement('tr');
+                    const values = row.split(',');
+                    values.forEach(value => {
+                        const td = document.createElement('td');
+                        td.textContent = value;
+                        tr.appendChild(td);
+                    });
+                    tableBody.appendChild(tr);
+                });
+
+                // Basic native HTML5 sorting
+                const table = document.getElementById('csv-preview-table');
+                const headersToSort = table.querySelectorAll('thead th');
+                const tbodyToSort = table.querySelector('tbody');
+
+                headersToSort.forEach((header, index) => {
+                    header.addEventListener('click', () => {
+                        sortTable(table, index);
+                    });
+                });
+
+                function sortTable(table, columnIndex) {
+                    const rows = Array.from(tbodyToSort.querySelectorAll('tr'));
+                    const isAscending = header.getAttribute('data-sort') === 'desc' || header.getAttribute('data-sort') === null;
+
+                    const sortedRows = rows.sort((rowA, rowB) => {
+                        const cellA = rowA.querySelectorAll('td')[columnIndex].textContent.trim();
+                        const cellB = rowB.querySelectorAll('td')[columnIndex].textContent.trim();
+
+                        const comparison = cellA.localeCompare(cellB, undefined, { numeric: true, sensitivity: 'base' });
+                        return isAscending ? comparison : comparison * -1;
+                    });
+
+                    tbodyToSort.innerHTML = '';
+                    sortedRows.forEach(row => tbodyToSort.appendChild(row));
+
+                    headersToSort.forEach(h => h.removeAttribute('data-sort'));
+                    header.setAttribute('data-sort', isAscending ? 'asc' : 'desc');
+                }
+
+            } catch (error) {
+                console.error('Could not load or display CSV:', error);
+                document.getElementById('csv-preview-container').innerHTML = '<p>Error loading CSV data.</p>';
+            }
+        }
+
+        // Call the function to load and display CSV
+        loadAndDisplayCsv();
+    </script>
+</body>
+</html>
