@@ -1,0 +1,24 @@
+{
+    "files": [
+        {
+            "fileName": "data.csv",
+            "description": "Sales data for the primary dashboard view.",
+            "columns": [
+                { "name": "Region", "description": "Geographic region" },
+                { "name": "Product Category", "description": "Category of the product sold" },
+                { "name": "Sales Amount", "description": "Monetary value of the sale" },
+                { "name": "Transaction Date", "description": "Date when the transaction occurred" }
+            ]
+        },
+        {
+            "fileName": "data2.csv",
+            "description": "Employee data for internal review.",
+            "columns": [
+                { "name": "ID", "description": "Employee identifier" },
+                { "name": "Name", "description": "Full name of the employee" },
+                { "name": "Age", "description": "Employee age" },
+                { "name": "Department", "description": "Department where the employee works" }
+            ]
+        }
+    ]
+}

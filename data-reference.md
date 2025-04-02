@@ -4,9 +4,7 @@ This dashboard provides an overview of our sales performance across different re
 
 ## Data Download
 
-You can download the underlying data for this dashboard in CSV format by clicking the link below:
-
-[Download Data (data.csv)](./data.csv)
+You can download the underlying data for this dashboard in CSV format by clicking the view data tab above
 
 ## Definitions
 
