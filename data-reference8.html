@@ -125,15 +125,21 @@
         }
         .download-link {
             margin-bottom: 10px;
-            display: block;
+            display: inline-flex;
+            align-items: center;
             font-weight: bold;
             text-align: center;
             color: #4285f4;
-            text-decoration: none;
+            text-decoration: underline;  /* ensure link is underlined */
             transition: color 0.3s;
         }
         .download-link:hover {
             color: #0056b3;
+        }
+        .download-icon {
+            font-size: 1.2em;
+            margin-right: 5px;
+            text-decoration: none; /* icon remains without underline */
         }
         /* Table styling */
         table {
@@ -218,9 +224,13 @@
         <section id="dataContent" class="content-section">
             <div class="csv-preview">
                 <div class="tabs" id="csvTabs"></div>
-                <a id="downloadLink" href="" class="download-link" download>Download CSV File</a>
                 <h2>Data Preview</h2>
                 <div id="csv-table"></div>
+                <!-- Download link moved below data preview with a download icon -->
+                <a id="downloadLink" href="" class="download-link" download>
+                     <span class="download-icon">📥</span>
+                     Download CSV File
+                </a>
                 <div id="colDetails" class="col-details"></div>
             </div>
         </section>
@@ -265,7 +275,6 @@
                         <span class="tab-icon">📄</span>
                         <div>
                             <span class="tab-filename">${file.fileName}</span>
-                            <span class="tab-description">${file.description}</span>
                         </div>
                     `;
                     tab.onclick = () => switchInnerTab(tab);
