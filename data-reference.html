@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Reference</title>
+    <title>Dashboard Data Reference</title>
     <style>
         body {
             font-family: sans-serif;
@@ -24,18 +24,141 @@
             padding-left: 20px;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-    <div id="markdown-container" class="markdown-body">
+    <div class="container">
+        <h1>Dashboard Data Reference</h1>
+        <div class="main-tabs">
+            <div class="main-tab active" data-target="docContent" onclick="switchMainTab(this)">Reference Documentation</div>
+            <div class="main-tab" data-target="dataContent" onclick="switchMainTab(this)">Download Data</div>
         </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+        <section id="docContent" class="content-section active">
+            <div class="markdown-content">
+                <div id="markdown"></div>
+            </div>
+        </section>
+        <section id="dataContent" class="content-section">
+            <div class="csv-preview">
+                <div class="tabs" id="csvTabs"></div>
+                <a id="downloadLink" href="" class="download-link" download>Download CSV File</a>
+                <h2>Data Preview</h2>
+                <div id="csv-table"></div>
+                <div id="colDetails" class="col-details"></div>
+            </div>
+        </section>
+    </div>
     <script>
-        fetch('./data-reference.md')
-            .then(response => response.text())
-            .then(markdown => {
-                document.getElementById('markdown-container').innerHTML = marked.parse(markdown);
+        function switchMainTab(element) {
+            document.querySelectorAll('.main-tab').forEach(tab => tab.classList.remove('active'));
+            element.classList.add('active');
+            const target = element.getAttribute('data-target');
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.toggle('active', section.id === target);
             });
+        }
+
+        fetch('data-reference.md')
+            .then(response => response.text())
+            .then(text => {
+                document.getElementById('markdown').innerHTML = marked.parse(text);
+            })
+            .catch(error => {
+                console.error('Error loading markdown:', error);
+                document.getElementById('markdown').innerHTML = "<p>Error loading documentation.</p>";
+            });
+
+        let csvMetadata = [];
+
+        fetch('data-files.json')
+            .then(response => response.json())
+            .then(data => {
+                csvMetadata = data.files.filter(file => file.fileName.startsWith('scsc_'));
+                const tabsContainer = document.getElementById('csvTabs');
+                csvMetadata.forEach((file, index) => {
+                    const tab = document.createElement('div');
+                    tab.className = 'tab' + (index === 0 ? ' active' : '');
+                    tab.setAttribute('data-file', file.fileName);
+                    tab.setAttribute('data-index', index);
+                    tab.textContent = file.fileName;
+                    tab.onclick = () => switchInnerTab(tab);
+                    tabsContainer.appendChild(tab);
+                });
+                if (csvMetadata.length > 0) {
+                    loadCSV(csvMetadata[0].fileName, 0);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading CSV metadata:', error);
+                document.getElementById('csvTabs').innerHTML = "<p>Error loading CSV metadata.</p>";
+            });
+
+        function loadCSV(fileName, metaIndex) {
+            fetch(fileName)
+                .then(response => response.text())
+                .then(text => {
+                    let rows = text.trim().split('\n');
+                    if (rows.length === 0) {
+                        document.getElementById('csv-table').innerHTML = "<p>No data available.</p>";
+                        return;
+                    }
+
+                    const previewLimit = 5;
+                    let html = '<table>';
+                    let headers = rows[0].split(',');
+                    html += '<thead><tr>';
+                    headers.forEach((header, index) => {
+                        let colDesc = "";
+                        if (csvMetadata[metaIndex] && csvMetadata[metaIndex].columns[index]) {
+                            colDesc = csvMetadata[metaIndex].columns[index].description;
+                        }
+                        html += '<th>' + header.trim() + 
+                                ' <span class="info-icon" title="' + colDesc + '">ℹ️</span></th>';
+                    });
+                    html += '</tr></thead>';
+
+                    html += '<tbody>';
+                    let totalRows = rows.length - 1;
+                    for (let i = 1; i <= totalRows && i <= previewLimit; i++) {
+                        let rowData = rows[i].split(',');
+                        let fadeClass = (i === previewLimit && totalRows > previewLimit) ? ' fade-row' : '';
+                        html += '<tr class="' + fadeClass + '">';
+                        rowData.forEach(cell => {
+                            html += '<td>' + cell.trim() + '</td>';
+                        });
+                        html += '</tr>';
+                    }
+                    html += '</tbody></table>';
+
+                    document.getElementById('csv-table').innerHTML = html;
+                    document.getElementById('downloadLink').setAttribute('href', fileName);
+                    displayColumnDetails(metaIndex);
+                })
+                .catch(error => {
+                    console.error('Error loading CSV:', error);
+                    document.getElementById('csv-table').innerHTML = "<p>Error loading CSV data.</p>";
+                });
+        }
+
+        function displayColumnDetails(metaIndex) {
+            if (csvMetadata[metaIndex]) {
+                const details = csvMetadata[metaIndex];
+                let html = '<strong>Description:</strong> ' + details.description + '<br><br>';
+                html += '<strong>Columns:</strong><br>';
+                details.columns.forEach(col => {
+                    html += '<em>' + col.name + ':</em> ' + col.description + '<br>';
+                });
+                document.getElementById('colDetails').innerHTML = html;
+            }
+        }
+
+        function switchInnerTab(element) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            element.classList.add('active');
+            const fileName = element.getAttribute('data-file');
+            const index = element.getAttribute('data-index');
+            loadCSV(fileName, index);
+        }
     </script>
 </body>
 </html>

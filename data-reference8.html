@@ -8,8 +8,9 @@
         /* Basic reset and typography */
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
+            font-family: 'Roboto', Arial, sans-serif;
+            background: #f9f9f9;
+            color: #333;
             line-height: 1.6;
             padding: 20px;
         }
@@ -18,29 +19,45 @@
             margin: 0 auto;
             background: #fff;
             padding: 20px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
         h1 {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 20px;
             text-align: center;
         }
         /* Main tab navigation */
         .main-tabs {
             display: flex;
-            justify-content: center;
+            justify-content: center; /* Center the top-level tabs */
+            gap: 20px; /* Add spacing between the tabs */
             margin-bottom: 20px;
         }
         .main-tab {
+            display: flex;
+            align-items: center;
+            gap: 8px; /* Space between icon and text */
             padding: 10px 20px;
-            margin: 0 5px;
             cursor: pointer;
             background: #e0e0e0;
             border-radius: 4px;
             user-select: none;
+            font-weight: bold;
+            color: #555;
+            transition: background 0.3s, color 0.3s;
+        }
+        .main-tab:hover {
+            background: #d0d0d0;
         }
         .main-tab.active {
             background: #4285f4;
             color: #fff;
-            font-weight: bold;
+        }
+        .main-tab-icon {
+            font-size: 1.2em;
+            color: inherit; /* Match text color */
         }
         /* Hide sections by default */
         .content-section {
@@ -59,61 +76,101 @@
         }
         .tabs {
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+            flex-wrap: wrap; /* Allow tabs to wrap */
+            gap: 10px; /* Add spacing between the tabs */
             margin-bottom: 10px;
+            border-top: 2px solid #ccc;
+            padding-top: 10px;
         }
         .tab {
-            padding: 10px 20px;
-            margin: 7px;
+            display: flex;
+            align-items: center;
+            gap: 8px; /* Space between icon and text */
+            padding: 10px 15px;
             cursor: pointer;
-            background: #e0e0e0;
-            border-radius: 4px;
+            background: #f0f0f0;
+            border-radius: 6px;
             user-select: none;
+            transition: background 0.3s, color 0.3s;
+            text-align: left;
+            flex: 0 0 auto;
+            min-width: 200px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .tab:hover {
+            background: #e0e0e0;
         }
         .tab.active {
             background: #4285f4;
             color: #fff;
+        }
+        .tab-icon {
+            font-size: 1.2em;
+            color: inherit; /* Match text color */
+        }
+        .tab-filename {
+            font-size: 1em;
             font-weight: bold;
+            color: inherit;
+            margin-bottom: 5px; /* Add spacing between filename and description */
+            display: block;
+        }
+        .tab-description {
+            font-size: 0.85em;
+            font-weight: 300;
+            color: #666;
+        }
+        .tab.active .tab-description {
+            color: #f0f0f0;
         }
         .download-link {
             margin-bottom: 10px;
             display: block;
             font-weight: bold;
             text-align: center;
+            color: #4285f4;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .download-link:hover {
+            color: #0056b3;
         }
         /* Table styling */
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
+            font-size: 0.9em;
         }
         table, th, td {
             border: 1px solid #ddd;
         }
         th, td {
-            padding: 8px;
+            padding: 10px;
             text-align: left;
         }
         th {
             background: #f0f0f0;
+            font-weight: bold;
             position: relative;
         }
         .info-icon {
             margin-left: 5px;
             font-size: 0.9em;
             cursor: help;
+            color: #888;
         }
         /* Fade the last row to indicate preview */
         .fade-row {
-            opacity: 0.5;
+            opacity: 0.6;
         }
         .col-details {
             margin-top: 15px;
             font-size: 0.9em;
             background: #f9f9f9;
-            padding: 10px;
+            padding: 15px;
             border: 1px solid #ddd;
+            border-radius: 6px;
         }
         @media(max-width: 600px) {
             body {
@@ -123,11 +180,16 @@
                 padding: 15px;
             }
             .main-tab, .tab {
-                padding: 8px 15px;
+                padding: 8px 12px;
             }
             th, td {
-                font-size: 14px;
+                font-size: 0.85em;
             }
+        }
+
+        /* New rule for horizontal scrolling */
+        #csv-table {
+            overflow-x: auto;
         }
     </style>
     <!-- Include Marked library for markdown rendering -->
@@ -138,8 +200,12 @@
         <h1>Dashboard Data Reference</h1>
         <!-- Main Tab Navigation -->
         <div class="main-tabs">
-            <div class="main-tab active" data-target="docContent" onclick="switchMainTab(this)">Reference Documentation</div>
-            <div class="main-tab" data-target="dataContent" onclick="switchMainTab(this)">Download Data</div>
+            <div class="main-tab active" data-target="docContent" onclick="switchMainTab(this)">
+                <span class="main-tab-icon">📄</span> Reference Documentation
+            </div>
+            <div class="main-tab" data-target="dataContent" onclick="switchMainTab(this)">
+                <span class="main-tab-icon">📂</span> Download Data
+            </div>
         </div>
         <!-- Documentation Section -->
         <section id="docContent" class="content-section active">
@@ -195,7 +261,13 @@
                     tab.className = 'tab' + (index === 0 ? ' active' : '');
                     tab.setAttribute('data-file', file.fileName);
                     tab.setAttribute('data-index', index);
-                    tab.textContent = file.fileName;
+                    tab.innerHTML = `
+                        <span class="tab-icon">📄</span>
+                        <div>
+                            <span class="tab-filename">${file.fileName}</span>
+                            <span class="tab-description">${file.description}</span>
+                        </div>
+                    `;
                     tab.onclick = () => switchInnerTab(tab);
                     tabsContainer.appendChild(tab);
                 });
@@ -249,7 +321,7 @@
                     }
                     html += '</tbody></table>';
                     
-                    document.getElementById('csv-table').innerHTML = html;
+                    document.getElementById('csv-table').innerHTML = '<div style="overflow-x:auto;">' + html + '</div>';
                     document.getElementById('downloadLink').setAttribute('href', fileName);
                     displayColumnDetails(metaIndex);
                 })
@@ -280,6 +352,18 @@
             const index = element.getAttribute('data-index');
             loadCSV(fileName, index);
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const mainTabs = document.querySelector('.main-tabs');
+            mainTabs.innerHTML = `
+                <div class="main-tab active" data-target="docContent" onclick="switchMainTab(this)">
+                    <span class="main-tab-icon">📄</span> Reference Documentation
+                </div>
+                <div class="main-tab" data-target="dataContent" onclick="switchMainTab(this)">
+                    <span class="main-tab-icon">📂</span> Download Data
+                </div>
+            `;
+        });
     </script>
 </body>
 </html>
