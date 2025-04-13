@@ -46,3 +46,29 @@ Once the files are hosted on S3, you can link them from your dashboard. For exam
 ```html
 <a href="https://your-bucket.s3.amazonaws.com/data-reference.html" target="_blank">Dashboard Data Reference</a>
 ```
+
+## Data Files Structure
+
+Below is an example entry from [data-files.json](./data-files.json) to illustrate its structure. This file provides metadata for each CSV file, and the page automatically loads the CSV files described here for preview and download.
+
+```json
+{
+  "files": [
+    {
+      "fileName": "data1.csv",
+      "description": "Sample CSV with housing price data.",
+      "columns": [
+        {
+          "name": "Price",
+          "description": "Average house price."
+        },
+        {
+          "name": "Median",
+          "description": "Median house price."
+        }
+      ]
+    }
+    // ...additional entries...
+  ]
+}
+```
